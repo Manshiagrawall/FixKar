@@ -156,33 +156,40 @@ const client = new twilio(accountSid, authToken);
 //   }
 // };
 
-// Send OTP
 exports.sendOTP = async (req, res) => {
   const { name, phone } = req.body;
 
-  // Check if name and phone are provided
+  // Validate input
   if (!name || !phone) {
     return res.status(400).json({ message: 'Name and phone number are required.' });
   }
 
   // Validate phone number format
   if (!/^\+\d{10,15}$/.test(phone)) {
-    return res.status(400).json({ message: 'Invalid phone number format. It should be in international format.' });
+    return res.status(400).json({ message: 'Invalid phone number format.' });
   }
 
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ phone });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already registered.' });
+    }
+
+    // Generate OTP and its expiry
     const otpCode = generateOTP();
     const otpExpiry = generateOTPExpiry();
 
-    // Check if OTP already exists for the phone number and remove it
-    const existingOTP = await OTP.findOne({ phone });
-    if (existingOTP) await OTP.deleteOne({ phone });
-
     // Save the new OTP to the database
-    const otp = new OTP({ phone, code: otpCode, expiresAt: otpExpiry });
+    const otp = new OTP({ 
+      phone, 
+      code: otpCode, 
+      expiresAt: otpExpiry,
+      name 
+    });
     await otp.save();
 
-    // Send OTP via Twilio SMS
+    // Send OTP via SMS
     await client.messages.create({
       body: `Hello ${name}, your OTP code is ${otpCode}`,
       from: twilioPhoneNumber,
@@ -196,69 +203,8 @@ exports.sendOTP = async (req, res) => {
   }
 };
 
-// exports.verifyOTP = async (req, res) => {
-//   const { code } = req.body; // Only get the code from request body
-
-//   // Check if the code is provided
-//   if (!code) {
-//     return res.status(400).json({ message: 'OTP code is required.' });
-//   }
-
-//   try {
-//     // Find the most recent OTP entry in the database
-//     const otpEntry = await OTP.findOne().sort({ createdAt: -1 }); // Assuming you have a createdAt field
-
-//     // Check if an entry was found and if it's valid
-//     if (!otpEntry || otpEntry.code !== code || otpEntry.expiresAt < Date.now()) {
-//       return res.status(400).json({ message: 'Invalid or expired OTP' });
-//     }
-
-//     // Delete the OTP after successful verification
-//     await OTP.deleteOne({ _id: otpEntry._id });
-
-//     res.status(200).json({ message: 'OTP verified successfully' });
-//   } catch (err) {
-//     console.error('Error verifying OTP:', err.message);
-//     res.status(500).json({ message: 'Error verifying OTP' });
-//   }
-// }; 
-
-// // Register user after OTP verification
-// exports.register = async (req, res) => {
-//   const { name, phone, password, userType, address, serviceType, location } = req.body;
-
-//   try {
-//     // Check if the user already exists
-//     let user = await User.findOne({ phone });
-//     if (user) return res.status(400).json({ message: 'User already exists' });
-
-//     // Create new user
-//     user = new User({ name, phone, password, userType, address, serviceType, location });
-
-//     // Hash password before saving
-//     const salt = await bcrypt.genSalt(10);
-//     user.password = await bcrypt.hash(password, salt);
-
-//     // Save user to database
-//     await user.save();
-
-//     // Create and return JWT token
-//     const payload = { user: { id: user.id, userType: user.userType } };
-//     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-//     res.status(201).json({
-//       message: 'Registration successful!',
-//       token
-//     });
-//   } catch (err) {
-//     console.error('Error registering user:', err.message);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
-
-// Verify OTP and generate token
 exports.verifyOTP = async (req, res) => {
-  const { code } = req.body; // Only get the OTP code from the request body
+  const { code } = req.body;
 
   // Check if the OTP code is provided
   if (!code) {
@@ -267,7 +213,7 @@ exports.verifyOTP = async (req, res) => {
 
   try {
     // Find the most recent OTP entry in the database
-    const otpEntry = await OTP.findOne().sort({ createdAt: -1 }); // Find the latest OTP entry
+    const otpEntry = await OTP.findOne().sort({ createdAt: -1 });
 
     // Check if an entry was found and if it's valid
     if (!otpEntry || otpEntry.code !== code || otpEntry.expiresAt < Date.now()) {
@@ -277,16 +223,23 @@ exports.verifyOTP = async (req, res) => {
     // Delete the OTP after successful verification
     await OTP.deleteOne({ _id: otpEntry._id });
 
-    // Find the user associated with this OTP using the stored phone number
-    let user = await User.findOne({ phone: otpEntry.phone }); // Ensure this matches your User schema
+    // Check if user already exists using stored phone number from otpEntry
+    let user = await User.findOne({ phone: otpEntry.phone }); 
 
-    // If user is not found, create a new one
-    if (!user) {
-      user = new User({ phone: otpEntry.phone }); // Create user with minimal info
-      await user.save();
+    // If user is found, return a message indicating they are already registered
+    if (user) {
+      return res.status(400).json({ message: 'User already registered.' });
     }
 
-    // Create payload with user data
+    // If user is not found, create a new one with name and phone
+    user = new User({
+      name: otpEntry.name,
+      phone: otpEntry.phone 
+    });
+    
+    await user.save();
+
+    // Create payload with user data for JWT token
     const payload = { user: { id: user.id, userType: user.userType } };
 
     // Create and return JWT token
@@ -301,8 +254,6 @@ exports.verifyOTP = async (req, res) => {
     res.status(500).json({ message: 'Error verifying OTP' });
   }
 };
-
-
 // Login user
 exports.login = async (req, res) => {
   const { phone } = req.body;
