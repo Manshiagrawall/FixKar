@@ -95,7 +95,7 @@ const OTP = require('../models/OTP');
 const { generateOTP, generateOTPExpiry } = require('../utils/generateOTP');
 
 // Twilio credentials from environment variables
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const accountSid = process.env.TWILIO_ACCOUNT_SID; 
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const client = new twilio(accountSid, authToken);
@@ -172,6 +172,7 @@ exports.sendOTP = async (req, res) => {
   try {
     // Check if user already exists
     const existingUser = await User.findOne({ phone });
+    // console.log(existingUser);
     if (existingUser) {
       return res.status(400).json({ message: 'User already registered.' });
     }
@@ -224,20 +225,33 @@ exports.verifyOTP = async (req, res) => {
     await OTP.deleteOne({ _id: otpEntry._id });
 
     // Check if user already exists using stored phone number from otpEntry
-    let user = await User.findOne({ phone: otpEntry.phone }); 
+    let user = await User.findOne({ phone: otpEntry.phone });
 
-    // If user is found, return a message indicating they are already registered
+    // If user is found, update their information
     if (user) {
-      return res.status(400).json({ message: 'User already registered.' });
+      // Update user information with name
+      user.name = otpEntry.name; // Update name or any other fields if necessary
+      await user.save();
+      
+      // Create payload with user data for JWT token
+      const payload = { user: { id: user.id, userType: user.userType } };
+
+      // Create and return JWT token
+      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      return res.status(200).json({
+        message: 'User already registered. OTP verified successfully.',
+        token
+      });
     }
 
     // If user is not found, create a new one with name and phone
     user = new User({
-      name: otpEntry.name,
-      phone: otpEntry.phone 
+      name: otpEntry.name, // Store name from OTP entry
+      phone: otpEntry.phone // Store phone from OTP entry 
     });
     
-    await user.save();
+    await user.save(); // Save new user to the database
 
     // Create payload with user data for JWT token
     const payload = { user: { id: user.id, userType: user.userType } };
