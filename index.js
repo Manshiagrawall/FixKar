@@ -21,7 +21,7 @@ app.use(cors());
 
 // Define your API routes
 app.use('/api/auth', require('./routes/auth'));          // Authentication routes (login, register)
-app.use('/api/services', require('./routes/service'));    // Service-related routes
+// app.use('/api/services', require('./routes/service'));    // Service-related routes
 
 // Set the port from environment or default to 5000
 const PORT = process.env.PORT || 5000;
