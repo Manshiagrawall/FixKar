@@ -5,5 +5,7 @@ exports.generateOTP = () => {
 };
 
 exports.generateOTPExpiry = () => {
-  return new Date(Date.now() + 10 * 60000); // 10 minutes expiry
+  const expiry = new Date();
+  expiry.setMinutes(expiry.getMinutes() + 5); // Set OTP expiry to 5 minutes from now
+  return expiry;
 };
