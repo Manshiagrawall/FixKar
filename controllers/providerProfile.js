@@ -1,6 +1,45 @@
 const jwt = require('jsonwebtoken');
 const Provider = require('../models/providerModel');
 
+exports.getProfile = async (req, res) => {
+  // Extract token from authorization header
+  const token = req.headers.authorization?.split(' ')[1];
+
+  // Check if token is provided
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  try {
+    // Verify and decode the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const providerId = decoded.user.id;
+
+    // Find the provider by ID
+    const provider = await Provider.findById(providerId);
+
+    // If provider is not found, return 404
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    // Return the provider's profile information
+    res.status(200).json({
+      message: 'Profile fetched successfully',
+      provider: {
+        id: provider._id,
+        name: provider.name,
+        phone: provider.phone,
+        email: provider.email,
+        address: provider.address
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching profile:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 exports.updateProfile = async (req, res) => {
   const { name, email, phone, address } = req.body;
   const token = req.headers.authorization?.split(' ')[1]; // Extract token from authorization header

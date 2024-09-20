@@ -4,6 +4,7 @@ const { addProvider } = require('../controllers/addProvider');
 const { verifyProvider } = require('../controllers/verifyProvider');
 const { loginProvider } = require('../controllers/loginProvider');
 const { verifyLogin } = require('../controllers/verifyLogin');
+const { getProfile } = require('../controllers/providerProfile');
 const { updateProfile } = require('../controllers/providerProfile'); // Ensure this is correctly importing
 const { deleteProfile } = require('../controllers/providerProfile');
 
@@ -18,6 +19,8 @@ router.post('/sendOTPLogin', loginProvider);
 
 // Verify Login OTP
 router.post('/verifyLogin', verifyLogin);
+
+router.get('/getProfile',getProfile);
 
 // Update profile with token verification
 router.put('/updateProfile', updateProfile); // Make sure updateProfile is correctly referenced
