@@ -36,7 +36,7 @@ exports.verifyProvider = async (req, res) => {
   
       // Create and return JWT token
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-      console.log("Humne to kardiya ",token);
+      console.log(token);
       return res.status(200).json({
         message: 'OTP verified successfully',
         token

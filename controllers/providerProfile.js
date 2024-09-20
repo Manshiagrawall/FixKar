@@ -35,7 +35,6 @@ exports.updateProfile = async (req, res) => {
       provider.address = {
         country: address.country || provider.address.country,
         state: address.state || provider.address.state,
-        district: address.district || provider.address.district,
         city: address.city || provider.address.city,
         locality: address.locality || provider.address.locality
       };
