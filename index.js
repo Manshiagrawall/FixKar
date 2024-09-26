@@ -2,6 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const serviceRoutes = require('./routes/serviceRoutes');
 const providerRoutes = require('./routes/providerRoutes');
+const requestRoutes = require('./routes/requestRoutes');
 const cors = require('cors');
 
 const app = express();
@@ -17,7 +18,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Routes
 app.use("/", providerRoutes);
 app.use('/', serviceRoutes); // Changed to use '/api/services'
-
+app.use("/", requestRoutes);
 // Database connection and server start
 dbConnect()
     .then(() => {

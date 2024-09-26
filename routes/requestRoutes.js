@@ -1,21 +1,24 @@
-// routes/requestRoutes.js
+// routes/providerRoutes.js
 const express = require('express');
+const {
+    getAssignedRequests,
+    acceptRequest,
+    declineRequest,
+    completeRequest
+} = require('../controllers/providerRequest');
+
 const router = express.Router();
-const requestController = require('../controllers/serviceRequestController');
 
-// Create a service request
-router.post('/', requestController.createRequest);
+// View assigned requests
+router.get('/assigned-requests', getAssignedRequests);
 
-// Get all requests assigned to a provider
-router.get('/assigned', requestController.getAssignedRequests);
+// Accept a request
+router.post('/accept/:requestId', acceptRequest);
 
-// Accept a service request
-router.put('/:id/accept', requestController.acceptRequest);
+// Decline a request
+router.post('/decline/:requestId', declineRequest);
 
-// Complete a service request
-router.put('/:id/complete', requestController.completeRequest);
-
-// Decline a service request
-router.delete('/:id/decline', requestController.declineRequest);
+// Complete a request
+router.post('/complete/:requestId', completeRequest);
 
 module.exports = router;

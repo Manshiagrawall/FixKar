@@ -4,9 +4,10 @@ const jwt = require('jsonwebtoken');
 
 // Add a new service
 exports.addService = async (req, res) => {
-  const { name, description, category, price, address, image } = req.body;
+  const { name, description, category, price, location, image} = req.body;
   const token = req.headers.authorization?.split(' ')[1];
 
+  console.log("body",req.body);
   if (!token) {
     return res.status(401).json({ message: 'No token provided' });
   }
@@ -15,7 +16,6 @@ exports.addService = async (req, res) => {
     // Verify token and get provider id
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const providerId = decoded.user.id;
-
     // Ensure the provider exists
     const provider = await Provider.findById(providerId);
     if (!provider) {
@@ -29,7 +29,7 @@ exports.addService = async (req, res) => {
       description,
       category,
       price,
-      address,
+      location,
       image
     });
 
@@ -126,7 +126,6 @@ exports.deleteService = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // Get all services (for users to view)
 exports.getAllServices = async (req, res) => {
   try {
@@ -142,7 +141,8 @@ exports.getAllServices = async (req, res) => {
 exports.getServiceById = async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   const { id } = req.params; // Service ID
-
+  
+  console.log("id",id);
   if (!token) {
     return res.status(401).json({ message: 'No token provided' });
   }
@@ -151,10 +151,10 @@ exports.getServiceById = async (req, res) => {
     // Verify token and get provider id
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const providerId = decoded.user.id;
-
+    console.log("providerId", decoded);
     // Find the service by ID and provider
     const service = await Service.findOne({ _id: id, provider: providerId });
-    
+     
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
     }

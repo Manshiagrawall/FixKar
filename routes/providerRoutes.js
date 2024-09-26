@@ -7,8 +7,14 @@ const { verifyLogin } = require('../controllers/verifyLogin');
 const { getProfile } = require('../controllers/providerProfile');
 const { updateProfile } = require('../controllers/providerProfile'); // Ensure this is correctly importing
 const { deleteProfile } = require('../controllers/providerProfile');
+const { getProvider } = require('../controllers/getProvider');
+const { updateProvider } = require('../controllers/getProvider');
 
 // Send OTP
+router.get('/getProvider',getProvider);
+
+router.put('/updateProvider',updateProvider);
+
 router.post('/sendOTP', addProvider);
 
 // Verify OTP
