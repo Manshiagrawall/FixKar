@@ -2,6 +2,8 @@
 const express = require('express');
 const {
     getAssignedRequests,
+    getAcceptedRequests,
+    getCompletedRequests,
     acceptRequest,
     declineRequest,
     completeRequest
@@ -11,14 +13,16 @@ const router = express.Router();
 
 // View assigned requests
 router.get('/assigned-requests', getAssignedRequests);
+router.get('/accepted-requests', getAcceptedRequests);
+router.get('/completed-requests', getCompletedRequests);
 
 // Accept a request
-router.post('/accept/:requestId', acceptRequest);
+router.put('/accept/:requestId', acceptRequest);
 
 // Decline a request
 router.post('/decline/:requestId', declineRequest);
 
 // Complete a request
-router.post('/complete/:requestId', completeRequest);
+router.put('/complete/:requestId', completeRequest);
 
 module.exports = router;
