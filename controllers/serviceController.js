@@ -7,7 +7,7 @@ exports.addService = async (req, res) => {
   const { name, description, category, price, location, image} = req.body;
   const token = req.headers.authorization?.split(' ')[1];
 
-  console.log("body",req.body);
+  // console.log("body",req.body);
   if (!token) {
     return res.status(401).json({ message: 'No token provided' });
   }
@@ -53,10 +53,10 @@ exports.getServicesByProvider = async (req, res) => {
     // Verify token and get provider id
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const providerId = decoded.user.id;
-
+    console.log("provider id",providerId);
     // Find services for the provider
     const services = await Service.find({ provider: providerId });
-
+     console.log("services",services);
     res.status(200).json({ services });
   } catch (err) {
     console.error('Error fetching services:', err.message);
