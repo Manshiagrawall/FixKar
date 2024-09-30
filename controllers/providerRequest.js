@@ -367,22 +367,31 @@ exports.declineRequest = async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const providerId = decoded.user.id;
 
+        console.log('Decoded token:', decoded);
+
+        // Find the request by requestId, providerId, and ensure it's pending
         const request = await Booking.findOneAndUpdate(
-            { _id: req.params.requestId, providerId: providerId, status: "pending" },
+            { _id: req.params.requestId, providerId: providerId, status: "Pending" },
             { status: "declined" },
             { new: true }
         );
 
+        console.log('Declined request:', request);
+
+        // Check if the request was found and updated
         if (!request) {
             return res.status(204).send();  // Return 204 if no pending request found or already declined
         }
 
-        res.status(200).json({ message: 'Request declined', request });
+        // If the request was found and updated, return success message
+        res.status(200).json({ message: 'Request declined successfully', request });
     } catch (err) {
         console.error('Error declining request:', err.message);
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
+
 
 // Complete a request
 exports.completeRequest = async (req, res) => {

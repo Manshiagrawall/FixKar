@@ -21,7 +21,7 @@ router.get('/completed-requests', getCompletedRequests);
 router.put('/accept/:requestId', acceptRequest);
 
 // Decline a request`11`````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
-router.put('/decline/:requestId', declineRequest);
+router.delete('/decline/:requestId', declineRequest);
 
 // Complete a request
 router.put('/complete/:requestId', completeRequest);
