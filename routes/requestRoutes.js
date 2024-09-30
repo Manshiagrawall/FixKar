@@ -6,7 +6,8 @@ const {
     getCompletedRequests,
     acceptRequest,
     declineRequest,
-    completeRequest
+    completeRequest,
+    deleteCompletedRequest
 } = require('../controllers/providerRequest');
 
 const router = express.Router();
@@ -24,5 +25,6 @@ router.put('/decline/:requestId', declineRequest);
 
 // Complete a request
 router.put('/complete/:requestId', completeRequest);
+router.delete('/delete/:requestId', deleteCompletedRequest);
 
 module.exports = router;

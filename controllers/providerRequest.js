@@ -412,3 +412,34 @@ exports.completeRequest = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
+
+// Delete a completed request
+exports.deleteCompletedRequest = async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const providerId = decoded.user.id;
+
+        // Check if the completed request exists and belongs to the provider
+        const request = await Booking.findOneAndDelete({
+            _id: req.params.requestId,
+            providerId: providerId,
+            status: "completed"
+        });
+
+        if (!request) {
+            return res.status(404).json({ message: 'No completed request found or already deleted' });
+        }
+
+        res.status(200).json({ message: 'Completed request deleted successfully', request });
+    } catch (err) {
+        console.error('Error deleting completed request:', err.message);
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
