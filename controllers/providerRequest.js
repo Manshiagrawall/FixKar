@@ -300,9 +300,13 @@ exports.getCompletedRequests = async (req, res) => {
         console.log('Decoded token:', decoded);
         console.log('Provider ID:', providerId);
 
-        const requests = await Booking.find({ providerId: providerId, status: 'Completed' })
-            .populate('serviceId', 'name description category price location image')
-            .populate('userId', 'name phone email location gender');
+        // Fetch completed requests where status is exactly "Completed"
+        const requests = await Booking.find({
+            providerId: providerId, 
+            status: "completed" // Exact match for "Completed"
+        })
+        .populate('serviceId', 'name description category price location image')
+        .populate('userId', 'name phone email location gender');
 
         console.log('Found requests:', requests);
 
@@ -316,6 +320,7 @@ exports.getCompletedRequests = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
 
 // Accept a request
 exports.acceptRequest = async (req, res) => {
