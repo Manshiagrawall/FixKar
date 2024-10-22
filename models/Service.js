@@ -6,7 +6,7 @@ const serviceSchema = new mongoose.Schema({
     description: { type: String, required: true },
     category: { type: String, required: true },
     price: { type: Number, required: true },
-    location: { type: String, required: true },
+    location: { type: String},
     image: { type: String }
 }, {
     timestamps: true // Automatically adds createdAt and updatedAt fields
